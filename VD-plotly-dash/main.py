@@ -5,9 +5,8 @@ import os
 from dash.dependencies import Input, Output
 import processing
 import plotly.express as px
-import plotly.graph_objs as go
 from sklearn.cluster import KMeans
-import pandas as pd
+from sklearn.metrics import silhouette_score
 
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 dashboard = processing.Dashboard()
@@ -88,6 +87,13 @@ app.layout = html.Div([
                 value='rbf'
             ),
 
+            html.P("Filter correlation attributes"),
+            dcc.Dropdown(
+                id='correlation-dropdown',
+                options=dashboard.get_variable_names(),
+                multi=True,
+            ),
+
             html.P("Select number of clusters:"),
             dcc.Slider(
                 id='clusters-slider',
@@ -103,6 +109,7 @@ app.layout = html.Div([
                     6: '6',
                 },
             ),
+
             html.P("Select clustering attributes:"),
             dcc.Dropdown(
                 id='clustering-dropdown',
@@ -141,15 +148,22 @@ app.layout = html.Div([
                 dcc.Graph(id='correlation-graph'),
             ],
                 id="correlation",
-            ),
-
+            )
         ],
             id="graphs2",
         ),
-    ],
 
-        id="dashboard",
-    ),
+        # dashboards
+        html.Div([
+            html.Div([
+                dcc.Graph(id='3d-graph'),
+            ],
+                id="cluster",
+            ),
+        ],
+            id="graphs3",
+        ),
+    ])
 ])
 
 
@@ -193,10 +207,19 @@ def Confusion_Updated(algorithms, c, nu, kernel):
 
 @app.callback(
     Output("correlation-graph", "figure"),
+    [Input("correlation-dropdown", "value")],
+)
+def correlation_obtained(value):
+    correlation = dashboard.correlation_updated(value)
+    return correlation
+
+
+@app.callback(
+    Output("3d-graph", "figure"),
     [Input("clusters-slider", "value"),
      Input("clustering-dropdown", "value")],
 )
-def correlation_updated(value, atribute):
+def scatter_updated(value, atribute):
     print(atribute)
     fig = {}
     if atribute is not None and len(atribute) == 3:
@@ -207,9 +230,11 @@ def correlation_updated(value, atribute):
         cols = dashboard.get_columns(atribute)
         data_with_clusters = dataset2.copy()
         data_with_clusters['Cluster'] = identified_clusters
+        score = silhouette_score(X, kmeans.labels_, metric='euclidean')
         fig = px.scatter_3d(data_with_clusters, x=atribute[0], y=atribute[1], z=atribute[2],
                             color='Cluster', opacity=0.8, size=cols.iloc[:, 0], size_max=20,
-                            title='Clusters with Kmeans')
+                            title=f'Clusters with Kmeans (Silhouette score: {score: .4f})')
+
     return fig
 
 

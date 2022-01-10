@@ -6,6 +6,7 @@ import plotly.graph_objs as go
 import colorlover as cl
 from sklearn.svm import SVC, NuSVC
 from sklearn.inspection import permutation_importance
+import numpy as np
 
 df = pd.read_csv('data/heart.csv')
 discrete_columns = []
@@ -72,6 +73,26 @@ class Dashboard(object):
         figure = go.Figure(data=data, layout=layout)
 
         return figure
+
+    def correlation_updated(self, value):
+        print(value)
+        graph = {}
+        if value is not None and len(value) == 2:
+            cols = self.get_columns(value)
+            trace = go.Scatter(x=cols.iloc[:, 0], y=cols.iloc[:, 1], mode='markers')
+            graph = {
+                'data': [trace],
+                'layout': go.Layout(
+                    title=f'Correlation ({np.corrcoef(cols.iloc[:,0],cols.iloc[:,1])[0,1]: .4f})',
+                    xaxis={
+                        'title': value[0],
+                    },
+                    yaxis={
+                        'title': value[1],
+                    }
+                ),
+            }
+        return graph
 
     def serve_roc_curve(self):
         decision_test = self.y_pred

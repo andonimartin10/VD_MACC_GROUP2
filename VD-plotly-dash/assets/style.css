@@ -43,7 +43,7 @@ h1, h2, h3, h4, h5, h6 {
 #filters {
   float: left;
   width: 25%; 
-  height: 750px;
+  height: 1050px;
 }
 
 .indicator {
@@ -70,6 +70,13 @@ h1, h2, h3, h4, h5, h6 {
   margin-top: 0.5%;
 }
 
+#graphs3 {
+  display: flex;
+  float: left;
+  width: 70%;
+  margin-top: 0.5%;
+}
+
 #roc {
   margin: 3px; 
   width: 700px;
@@ -88,4 +95,10 @@ h1, h2, h3, h4, h5, h6 {
 #confusion {
   margin: 3px;
   width: 700px;
+}
+
+#cluster {
+  margin: 3px;
+  width: 1000px;
+  float: left;
 }
